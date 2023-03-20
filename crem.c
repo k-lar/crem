@@ -38,11 +38,9 @@ char* getFileName(int give_dir) {
     if (PLATFORM == "linux") {
         char* path = getenv("HOME");
         char* crem_extension = "/.config/crem/";
-        char* crempath_dir;
-        crempath_dir = concatString(path, crempath_dir, crem_extension);
+        char* crempath_dir = concatString(path, crempath_dir, crem_extension);
+        char* crempath = concatString(crempath_dir, crempath, "creminders");
 
-        char* crempath;
-        crempath = concatString(crempath_dir, crempath, "creminders");
         if (give_dir == 1) {
             return crempath_dir;
         } else if (give_dir == 0) {
@@ -52,11 +50,9 @@ char* getFileName(int give_dir) {
     } else if (PLATFORM == "windows") {
         char* path = getenv("APPDATA");;
         char* crem_extension = "/crem/";
-        char* crempath_dir;
-        crempath_dir = concatString(path, crempath_dir, crem_extension);
+        char* crempath_dir = concatString(path, crempath_dir, crem_extension);
+        char* crempath = concatString(crempath_dir, crempath, "creminders");
 
-        char* crempath;
-        crempath = concatString(crempath_dir, crempath, "creminders");
         return crempath;
 
     } else if (PLATFORM == "other") {
@@ -82,8 +78,6 @@ void createSource() {
             printf("Quitting.\n");
             exit(0);
         } else {
-            /* FILE* path; */
-            /* path = fopen(getFileName(0), "w"); */
             FILE* path = fopen(name, "w");
             if (path == NULL) {
                 printf("fopen failed, errno: %d\n", errno);
@@ -150,7 +144,6 @@ int main(int argc, char* argv[]) {
 	} else {
             help();
 	}
-	    /* printf(getFileName(0)); */
         return 0;
     }
 
