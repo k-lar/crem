@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdbool.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     #define PLATFORM "windows"
@@ -15,7 +16,7 @@
 
 #endif
 
-char fileName[] = "/home/klar/.config/crem/creminders";
+// char fileName[] = "/home/klar/.config/crem/creminders";
 
 char* concatString(char* str1, char* str2, char* str3) {
     if((str2 = malloc(strlen(str1)+strlen(str3)+1)) != NULL){
@@ -29,17 +30,10 @@ char* concatString(char* str1, char* str2, char* str3) {
     return str2;
 }
 
-/* void createSource() { */
-/*     struct stat info; */
-
-/*     if (stat(getFileName(0), &info) != 0) */
-/*         printf("cannot access %s\n", pathname); */
-/*     else if (info.st_mode & S_IFDIR)  // S_ISDIR() doesn't exist on my windows */
-/*         printf("%s is a directory\n", pathname); */
-/*     else */
-/*         printf("%s is no directory\n", pathname); */
-
-/* } */
+int fileExists(char* fileName) {
+    struct stat buffer;
+    return (stat(fileName, &buffer) == 0);
+}
 
 char* getFileName(int give_dir) {
     if (PLATFORM == "linux") {
@@ -81,8 +75,38 @@ char* getFileName(int give_dir) {
     }
 }
 
+int isDir(const char* fileName) {
+    struct stat path;
+    stat(fileName, &path);
+    return S_ISREG(path.st_mode);
+}
+
+void createSource() {
+    if (isDir(getFileName(1)) != 0) {
+    	mkdir(getFileName(1), 0700);
+	printf("Do you want to create creminders file? [Y/n]: ");
+	char* creminders_choice;
+	scanf("%s", creminders_choice);
+	if (strcmp(creminders_choice, "n" == 0) || strcmp(creminders_choice, "N" == 0)) {
+	    printf("Quitting.\n");
+	    exit(0);
+	} else {
+	    FILE* path;
+            path = fopen(getFileName(0), "w");
+	    fclose(path);
+	}
+    } else {
+    	FILE* path;
+	path = fopen(getFileName(0), "w");
+	fclose(path);
+    }
+
+    
+}
+
+
 void showReminders() {
-    FILE* file = fopen(fileName, "r"); /* should check the result */
+    FILE* file = fopen(getFileName(0), "r"); /* should check the result */
     char line[512];
     while (fgets(line, sizeof(line), file)) {
         // note that fgets don't strip the terminating \n, checking its
@@ -100,7 +124,7 @@ void version() {
 }
 
 void help() {
-    char help_msg[] =
+    const char help_msg[] =
     "For this program to work as intended, add this line to the bottom of your .bashrc file:\n"
     "  crem --show\n"
     "Or use the flag --add-to-sh to do it for you\n"
@@ -117,7 +141,12 @@ void help() {
 
 int main(int argc, char* argv[]) {
     if (argc == 1) {
-        help();
+	if (fileExists(getFileName(0)) != 0){
+	    createSource();
+	} else {
+            help();
+	}
+	printf(getFileName(0));
         return 0;
     }
 
@@ -140,6 +169,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    printf(getFileName(1));
+    // printf(getFileName(1));
     return 0;
 }
