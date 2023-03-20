@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     #define PLATFORM "windows"
@@ -15,8 +16,6 @@
     #define PLATFORM "other"
 
 #endif
-
-// char fileName[] = "/home/klar/.config/crem/creminders";
 
 char* concatString(char* str1, char* str2, char* str3) {
     if((str2 = malloc(strlen(str1)+strlen(str3)+1)) != NULL){
@@ -41,16 +40,7 @@ char* getFileName(int give_dir) {
         char* crem_extension = "/.config/crem/";
         char* crempath_dir;
         crempath_dir = concatString(path, crempath_dir, crem_extension);
-        /* if((crempath = malloc(strlen(path)+strlen(crem_extension)+1)) != NULL){ */
-        /*     crempath[0] = '\0';   // ensures the memory is an empty string */
-        /*     strcat(crempath,path); */
-        /*     strcat(crempath,crem_extension); */
-        /* } else { */
-        /*     printf("malloc failed!\n"); */
-        /*     exit(1); */
-        /* } */
 
-        /* printf(crempath); */
         char* crempath;
         crempath = concatString(crempath_dir, crempath, "creminders");
         if (give_dir == 1) {
@@ -82,40 +72,54 @@ int isDir(const char* fileName) {
 }
 
 void createSource() {
-    if (isDir(getFileName(1)) != 0) {
+    char* name = getFileName(0);
+    char* creminders_choice;
+    if (isDir(getFileName(1)) == false) {
     	mkdir(getFileName(1), 0700);
-	printf("Do you want to create creminders file? [Y/n]: ");
-	char* creminders_choice;
-	scanf("%s", creminders_choice);
-	if (strcmp(creminders_choice, "n" == 0) || strcmp(creminders_choice, "N" == 0)) {
-	    printf("Quitting.\n");
-	    exit(0);
-	} else {
-	    FILE* path;
-            path = fopen(getFileName(0), "w");
-	    fclose(path);
-	}
+	    printf("Do you want to create creminders file? [Y/n]: ");
+	    scanf("%s", creminders_choice);
+        if (strcmp(creminders_choice, "n") == 0 || strcmp(creminders_choice, "N") == 0) {
+            printf("Quitting.\n");
+            exit(0);
+        } else {
+            /* FILE* path; */
+            /* path = fopen(getFileName(0), "w"); */
+            FILE* path = fopen(name, "w");
+            if (path == NULL) {
+                printf("fopen failed, errno: %d\n", errno);
+                exit(1);
+            } else {
+                fclose(path);
+            }
+        }
     } else {
-    	FILE* path;
-	path = fopen(getFileName(0), "w");
-	fclose(path);
+    	/* FILE* path; */
+	    FILE* path = fopen(name, "w");
+
+        if (path == NULL) {
+            printf("fopen failed, errno: %d\n", errno);
+            exit(1);
+        } else {
+            fclose(path);
+        }
     }
-
-    
 }
-
 
 void showReminders() {
     FILE* file = fopen(getFileName(0), "r"); /* should check the result */
-    char line[512];
-    while (fgets(line, sizeof(line), file)) {
-        // note that fgets don't strip the terminating \n, checking its
-        // presence would allow to handle lines longer that sizeof(line)
-        if (strcmp(line, "\n")) {
-            printf("%s", line);
+    if (file != NULL) {
+        char line[512];
+        while (fgets(line, sizeof(line), file)) {
+            // note that fgets don't strip the terminating \n, checking its
+            // presence would allow to handle lines longer that sizeof(line)
+            if (strcmp(line, "\n")) {
+                printf("%s", line);
+            }
         }
+        fclose(file);
+    } else {
+        printf("creminders file not found!\n");
     }
-    fclose(file);
 }
 
 void version() {
@@ -141,12 +145,12 @@ void help() {
 
 int main(int argc, char* argv[]) {
     if (argc == 1) {
-	if (fileExists(getFileName(0)) != 0){
+	if (fileExists(getFileName(0)) == 0) {
 	    createSource();
 	} else {
             help();
 	}
-	printf(getFileName(0));
+	    /* printf(getFileName(0)); */
         return 0;
     }
 
@@ -169,6 +173,5 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // printf(getFileName(1));
     return 0;
 }
