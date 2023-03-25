@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdbool.h>
@@ -9,7 +10,7 @@
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     #define PLATFORM "windows"
 
-#elif defined(__linux__) // any linux distribution
+#elif defined(__linux__) /* any linux distribution */
     #define PLATFORM "linux"
 
 #else
@@ -87,7 +88,6 @@ void createSource() {
             }
         }
     } else {
-    	/* FILE* path; */
 	    FILE* path = fopen(name, "w");
 
         if (path == NULL) {
@@ -96,6 +96,58 @@ void createSource() {
         } else {
             fclose(path);
         }
+    }
+}
+
+void removeSource() {
+    char* creminders = getFileName(0);
+    if (access(creminders, F_OK) != -1) {
+        if (remove(creminders) == 0) {
+            printf("File deleted successfully.\n");
+        } else {
+            printf("Error deleting file.\n");
+        }
+    }
+    /* else { */
+    /*     // file doesn't exist */
+    /*     printf("File does not exist.\n"); */
+    /* } */
+}
+
+int getFileLines() {
+    char* creminders = getFileName(0);
+    char buffer[1024];
+    int line_count = 1;
+
+    FILE* file = fopen(getFileName(0), "r"); /* should check the result */
+    if (file != NULL) {
+        while (fgets(buffer, sizeof(buffer), file) != NULL) {
+            line_count++;
+        }
+        fclose(file);
+    }
+    return line_count;
+
+}
+
+void addReminder(char* reminder) {
+    char* creminders = getFileName(0);
+    if (access(creminders, F_OK) != -1) {
+        FILE *file = fopen(creminders, "a");
+        if (file == NULL) {
+            createSource();
+        }
+
+        int line_num = getFileLines();
+
+        fprintf(file, "[%d] - %s\n", line_num, reminder);
+        fclose(file);
+    }
+    else {
+        // file doesn't exist
+        /* printf("File does not exist.\n"); */
+        createSource();
+        addReminder(reminder);
     }
 }
 
@@ -159,6 +211,14 @@ int main(int argc, char* argv[]) {
         } else if (strcmp(argv[arg_num], "-s") == 0 || strcmp(argv[arg_num], "--show") == 0) {
             showReminders();
             arg_num++;
+
+        } else if (strcmp(argv[arg_num], "-R") == 0 || strcmp(argv[arg_num], "--reset") == 0) {
+            removeSource();
+            arg_num++;
+
+        } else if (strcmp(argv[arg_num], "-a") == 0 || strcmp(argv[arg_num], "--add") == 0) {
+            addReminder(argv[arg_num+1]);
+            arg_num = arg_num + 2;
 
         } else {
             printf("Unknown argument passed: %s\n", argv[arg_num]);
