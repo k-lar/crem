@@ -108,26 +108,6 @@ void removeSource() {
             printf("Error deleting file.\n");
         }
     }
-    /* else { */
-    /*     // file doesn't exist */
-    /*     printf("File does not exist.\n"); */
-    /* } */
-}
-
-int getFileLines() {
-    char* creminders = getFileName(0);
-    char buffer[1024];
-    int line_count = 1;
-
-    FILE* file = fopen(getFileName(0), "r"); /* should check the result */
-    if (file != NULL) {
-        while (fgets(buffer, sizeof(buffer), file) != NULL) {
-            line_count++;
-        }
-        fclose(file);
-    }
-    return line_count;
-
 }
 
 void addReminder(char* reminder) {
@@ -138,28 +118,56 @@ void addReminder(char* reminder) {
             createSource();
         }
 
-        int line_num = getFileLines();
-
-        fprintf(file, "[%d] - %s\n", line_num, reminder);
+        fprintf(file, "%s\n", reminder);
         fclose(file);
-    }
-    else {
-        // file doesn't exist
+    } else {
         /* printf("File does not exist.\n"); */
         createSource();
         addReminder(reminder);
     }
 }
 
+void removeReminder(char* target) {
+    char* creminders = getFileName(0);
+    char buffer[1024];
+    int entry = atoi(target);
+    int curr_line = 1;
+    char* tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
+
+    if (access(creminders, F_OK) != -1) {
+        FILE *file1 = fopen(creminders, "r");
+
+        if (file1 == NULL) {
+            return;
+        }
+
+        FILE* file2 = fopen(tmp_filename, "w");
+        while (fgets(buffer, sizeof(buffer), file1)) {
+              if (curr_line != entry) {
+                 fputs(buffer, file2);
+              }
+              curr_line++;
+        }
+
+        fclose(file1);
+        fclose(file2);
+
+        remove(creminders);
+        rename(tmp_filename, creminders);
+    }
+}
+
 void showReminders() {
     FILE* file = fopen(getFileName(0), "r"); /* should check the result */
+    int line_num = 1;
     if (file != NULL) {
         char line[512];
         while (fgets(line, sizeof(line), file)) {
             // note that fgets don't strip the terminating \n, checking its
             // presence would allow to handle lines longer that sizeof(line)
             if (strcmp(line, "\n")) {
-                printf("%s", line);
+                printf("[%d] - %s", line_num, line);
+                line_num++;
             }
         }
         fclose(file);
@@ -218,6 +226,10 @@ int main(int argc, char* argv[]) {
 
         } else if (strcmp(argv[arg_num], "-a") == 0 || strcmp(argv[arg_num], "--add") == 0) {
             addReminder(argv[arg_num+1]);
+            arg_num = arg_num + 2;
+
+        } else if (strcmp(argv[arg_num], "-r") == 0 || strcmp(argv[arg_num], "--remove") == 0) {
+            removeReminder(argv[arg_num+1]);
             arg_num = arg_num + 2;
 
         } else {
