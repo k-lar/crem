@@ -127,33 +127,121 @@ void addReminder(char* reminder) {
     }
 }
 
+bool hasOnlyChars(char* str, char* allowedChars) {
+    /* char* allowedChars = "0123456789,"; */
+    int strLen = strlen(str);
+    int charsLen = strlen(allowedChars);
+    for (int i = 0; i < strLen; i++) {
+        bool charExists = false;
+
+        /* Check if character exists in allowedChars */
+        for (int j = 0; j < charsLen; j++) {
+            if (str[i] == allowedChars[j]) {
+                charExists = true;
+                break;
+            }
+        }
+
+        /* If character doesn't exist, return false */
+        if (!charExists) {
+            return false;
+        }
+    }
+
+    /* If all characters exist, return true */
+    return true;
+}
+
 void removeReminder(char* target) {
     char* creminders = getFileName(0);
     char buffer[1024];
-    int entry = atoi(target);
+    char* token;
+    int* entries_arr;
+    const int entry_max = 25;
+    entries_arr = malloc(sizeof(int) * entry_max);
+    memset(entries_arr, 0, sizeof(int)*entry_max);
+    int arr_count = 0;
+
+    char* number_chars = "0123456789";
+    char* num_array_chars = "0123456789,";
+    if (hasOnlyChars(target, number_chars) == true) {
+        int entry = atoi(target);
+        /* entries_arr = (int*)malloc(sizeof(int)*arr_count); */
+        entries_arr[0] = entry;
+
+    } else if (hasOnlyChars(target, num_array_chars) == true) {
+        /* char* entries_str = target, *currnum; */
+        char* entries_str = target;
+        int entry_num = 0;
+
+        /* while ((currnum = strtok(entry_num ? NULL : entries_str, ",")) != NULL) { */
+        /*     arr_count++; */
+        /* } */
+        /* entries_arr = (int*)malloc(sizeof(int)*arr_count); */
+
+        /* while ((currnum = strtok(entry_num ? NULL : entries_str, ",")) != NULL) { */
+        /*     entries_arr[entry_num++] = atoi(currnum); */
+        /* } */
+
+        /* token = strtok(entries_str, ","); */
+        /* // loop through the string to extract all other tokens */
+        /* while (token != NULL) { */
+        /*     arr_count++; */
+        /*     token = strtok(NULL, ","); */
+        /* } */
+
+        /* entries_arr = (int*)malloc(sizeof(int)*arr_count); */
+        /* arr_count = 0; */
+        token = strtok(entries_str, ",");
+        // loop through the string to extract all other tokens
+        while (token != NULL) {
+            entries_arr[arr_count] = atoi(token);
+            arr_count++;
+            token = strtok(NULL, ",");
+        }
+
+
+        /* int entry_arr_length = sizeof(entries_arr) / sizeof(entries_arr[0]); */
+        /* for (int i = 0; i < entry_arr_length; i++) { */
+        /*     printf("Entry number %d: %d\n", i, entries_arr[i]); */
+        /* } */
+
+        for(int i = 0; i < entry_max; ++i) {
+          printf("Element %d: %d\n", i, entries_arr[i]);
+        }
+
+
+    } else {
+        printf("Bad removal parameter: %s\n", target);
+        return;
+    }
+
+    int entry_arr_length = sizeof(entries_arr) / sizeof(entries_arr[0]);
     int curr_line = 1;
     char* tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
 
-    if (access(creminders, F_OK) != -1) {
-        FILE *file1 = fopen(creminders, "r");
+    for (int i = 0; i < entry_arr_length; i++) {
+        if (access(creminders, F_OK) != -1) {
+            FILE *file1 = fopen(creminders, "r");
 
-        if (file1 == NULL) {
-            return;
+            if (file1 == NULL) {
+                return;
+            }
+
+            FILE* file2 = fopen(tmp_filename, "w");
+            while (fgets(buffer, sizeof(buffer), file1)) {
+                  if (curr_line != entries_arr[i]) {
+                     fputs(buffer, file2);
+                  }
+                  curr_line++;
+            }
+
+            fclose(file1);
+            fclose(file2);
+
+            remove(creminders);
+            rename(tmp_filename, creminders);
         }
-
-        FILE* file2 = fopen(tmp_filename, "w");
-        while (fgets(buffer, sizeof(buffer), file1)) {
-              if (curr_line != entry) {
-                 fputs(buffer, file2);
-              }
-              curr_line++;
-        }
-
-        fclose(file1);
-        fclose(file2);
-
-        remove(creminders);
-        rename(tmp_filename, creminders);
     }
 }
 
