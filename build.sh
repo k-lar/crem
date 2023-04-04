@@ -1,3 +1,3 @@
 #!/bin/sh
 
-cc -o crem crem.c
+cc -std=c99 -Wall -Wextra -pedantic -Wold-style-declaration -o crem crem.c

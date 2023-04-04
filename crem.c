@@ -8,13 +8,16 @@
 #include <errno.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    #define PLATFORM "windows"
+    /* #define PLATFORM "windows" */
+    const char platform[] = "windows";
 
 #elif defined(__linux__) /* any linux distribution */
-    #define PLATFORM "linux"
+    /* #define PLATFORM "linux" */
+    const char platform[] = "linux";
 
 #else
-    #define PLATFORM "other"
+    /* #define PLATFORM "other" */
+    const char platform[] = "other";
 
 #endif
 
@@ -51,17 +54,18 @@ void help() {
     "  crem -r                 Remove an entry [or multiple entries, seperated with \",\"]\n"
     "  crem -R                 Remove $HOME/.config/creminders file\n"
     "  crem --show             Prints your reminders to the terminal\n"
-    "  crem --add-to-sh        Adds reminder autodetection inside bash|zsh|fish\n"
     "  crem --version          Prints what version of crem you have installed\n";
     printf(help_msg);
 }
 
 char* getFileName(int give_dir) {
-    if (PLATFORM == "linux") {
+    char* crempath_dir = (char* )malloc(50);
+    char* crempath = (char* )malloc(50);
+    if (strcmp(platform, "linux") == 0) {
         char* path = getenv("HOME");
         char* crem_extension = "/.config/crem/";
-        char* crempath_dir = concatString(path, crempath_dir, crem_extension);
-        char* crempath = concatString(crempath_dir, crempath, "creminders");
+        crempath_dir = concatString(path, crempath_dir, crem_extension);
+        crempath = concatString(crempath_dir, crempath, "creminders");
 
         if (give_dir == 1) {
             return crempath_dir;
@@ -69,18 +73,23 @@ char* getFileName(int give_dir) {
             return crempath;
         }
 
-    } else if (PLATFORM == "windows") {
+    } else if (strcmp(platform, "windows") == 0) {
         char* path = getenv("APPDATA");;
         char* crem_extension = "/crem/";
-        char* crempath_dir = concatString(path, crempath_dir, crem_extension);
-        char* crempath = concatString(crempath_dir, crempath, "creminders");
+        crempath_dir = concatString(path, crempath_dir, crem_extension);
+        crempath = concatString(crempath_dir, crempath, "creminders");
 
-        return crempath;
+        if (give_dir == 1) {
+            return crempath_dir;
+        } else if (give_dir == 0) {
+            return crempath;
+        }
 
-    } else if (PLATFORM == "other") {
+    } else {
         printf("Program was not built for this system.");
         exit(1);
     }
+    return NULL;
 }
 
 int isDir(const char* fileName) {
@@ -91,7 +100,7 @@ int isDir(const char* fileName) {
 
 void createSource() {
     char* name = getFileName(0);
-    char* creminders_choice;
+    char* creminders_choice = (char* )malloc(16);
     if (isDir(getFileName(1)) == false) {
     	mkdir(getFileName(1), 0700);
 	    printf("Do you want to create creminders file? [Y/n]: ");
@@ -118,6 +127,7 @@ void createSource() {
             fclose(path);
         }
     }
+    free(creminders_choice);
 }
 
 void removeSource() {
@@ -204,7 +214,6 @@ void removeReminder(char* target) {
 
     } else if (hasOnlyChars(target, num_array_chars) == true) {
         char* entries_str = target;
-        int entry_num = 0;
 
         token = strtok(entries_str, ",");
         /* loop through the string to extract all other tokens */
@@ -225,7 +234,8 @@ void removeReminder(char* target) {
         return;
     }
 
-    char* tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
+    char* tmp_filename = malloc(50);
+    tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
     int* sorted_entries = bubbleSort(entries_arr, entry_max);
 
     for (int i = 0; i < entry_max; i++) {
