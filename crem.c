@@ -20,7 +20,7 @@
 
 char* concatString(char* str1, char* str2, char* str3) {
     if((str2 = malloc(strlen(str1)+strlen(str3)+1)) != NULL){
-        str2[0] = '\0';   // ensures the memory is an empty string
+        str2[0] = '\0';   /* ensures the memory is an empty string */
         strcat(str2,str1);
         strcat(str2,str3);
     } else {
@@ -36,7 +36,7 @@ int fileExists(char* fileName) {
 }
 
 void version() {
-    char ver[] = "0.0.1";
+    char ver[] = "0.1.0";
     printf("%s\n", ver);
 }
 
@@ -106,7 +106,6 @@ void createSource() {
                 exit(1);
             } else {
                 fclose(path);
-                help();
             }
         }
     } else {
@@ -142,8 +141,8 @@ void addReminder(char* reminder) {
 
         fprintf(file, "%s\n", reminder);
         fclose(file);
+
     } else {
-        /* printf("File does not exist.\n"); */
         createSource();
         addReminder(reminder);
     }
@@ -164,7 +163,6 @@ int* bubbleSort(int* array, int array_length) {
 }
 
 bool hasOnlyChars(char* str, char* allowedChars) {
-    /* char* allowedChars = "0123456789,"; */
     int strLen = strlen(str);
     int charsLen = strlen(allowedChars);
     for (int i = 0; i < strLen; i++) {
@@ -202,7 +200,6 @@ void removeReminder(char* target) {
     char* num_array_chars = "0123456789,";
     if (hasOnlyChars(target, number_chars) == true) {
         int entry = atoi(target);
-        /* entries_arr = (int*)malloc(sizeof(int)*arr_count); */
         entries_arr[0] = entry;
 
     } else if (hasOnlyChars(target, num_array_chars) == true) {
@@ -223,24 +220,18 @@ void removeReminder(char* target) {
             token = strtok(NULL, ",");
         }
 
-        /* for(int i = 0; i < entry_max; ++i) { */
-        /*   printf("Element %d: %d\n", i, entries_arr[i]); */
-        /* } */
-
     } else {
         printf("Bad removal parameter: %s\n", target);
         return;
     }
 
-    /* size_t entry_arr_length = sizeof(entries_arr) / sizeof(entries_arr[0]); */
     char* tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
+    int* sorted_entries = bubbleSort(entries_arr, entry_max);
 
     for (int i = 0; i < entry_max; i++) {
-        if (entries_arr[i] == 0) {
+        if (sorted_entries[i] == 0) {
             continue;
         }
-
-        /* printf("Deleting %d\n", entries_arr[i]); */
 
         if (access(creminders, F_OK) != -1) {
             FILE *file1 = fopen(creminders, "r");
@@ -254,7 +245,7 @@ void removeReminder(char* target) {
             FILE* file2 = fopen(tmp_filename, "w");
             int curr_line = 1;
             while (fgets(buffer, sizeof(buffer), file1)) {
-                  if (curr_line != entries_arr[i]) {
+                  if (curr_line != sorted_entries[i]) {
                      fputs(buffer, file2);
                   }
                   curr_line++;
@@ -283,7 +274,7 @@ void showReminders() {
                 line_num++;
             }
         }
-        printf("################################\n");
+        printf("################################\n\n");
         fclose(file);
     } else {
         printf("creminders file not found!\n");
@@ -294,6 +285,10 @@ int main(int argc, char* argv[]) {
     if (argc == 1) {
 	if (fileExists(getFileName(0)) == 0) {
 	    createSource();
+        if (fileExists(getFileName(0)) != 0) {
+            printf("Success!\n");
+            printf("For help using this program, use the -h flag.\n");
+        }
 	} else {
             help();
 	}
@@ -318,11 +313,15 @@ int main(int argc, char* argv[]) {
             arg_num++;
 
         } else if (strcmp(argv[arg_num], "-a") == 0 || strcmp(argv[arg_num], "--add") == 0) {
-            addReminder(argv[arg_num+1]);
+            if (argv[arg_num+1] != NULL) {
+                addReminder(argv[arg_num+1]);
+            }
             arg_num = arg_num + 2;
 
         } else if (strcmp(argv[arg_num], "-r") == 0 || strcmp(argv[arg_num], "--remove") == 0) {
-            removeReminder(argv[arg_num+1]);
+            if (argv[arg_num+1] != NULL) {
+                removeReminder(argv[arg_num+1]);
+            }
             arg_num = arg_num + 2;
 
         } else {
