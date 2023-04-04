@@ -35,6 +35,27 @@ int fileExists(char* fileName) {
     return (stat(fileName, &buffer) == 0);
 }
 
+void version() {
+    char ver[] = "0.0.1";
+    printf("%s\n", ver);
+}
+
+void help() {
+    const char help_msg[] =
+    "For this program to work as intended, add this line to the bottom of your .bashrc file:\n"
+    "  crem --show\n"
+    "Or use the flag --add-to-sh to do it for you\n"
+    "Usage:\n"
+    "  crem                    Creates $HOME/.config/creminders file\n"
+    "  crem -a                 Add an entry inside the reminders file\n"
+    "  crem -r                 Remove an entry [or multiple entries, seperated with \",\"]\n"
+    "  crem -R                 Remove $HOME/.config/creminders file\n"
+    "  crem --show             Prints your reminders to the terminal\n"
+    "  crem --add-to-sh        Adds reminder autodetection inside bash|zsh|fish\n"
+    "  crem --version          Prints what version of crem you have installed\n";
+    printf(help_msg);
+}
+
 char* getFileName(int give_dir) {
     if (PLATFORM == "linux") {
         char* path = getenv("HOME");
@@ -85,6 +106,7 @@ void createSource() {
                 exit(1);
             } else {
                 fclose(path);
+                help();
             }
         }
     } else {
@@ -125,6 +147,20 @@ void addReminder(char* reminder) {
         createSource();
         addReminder(reminder);
     }
+}
+
+int* bubbleSort(int* array, int array_length) {
+    int i, j, temp;
+    for (i = 0 ; i < ( array_length - 1 ); i++){
+        for (j= 0 ; j < array_length - i - 1; j++){
+            if(array[j] < array[j+1]){
+                temp=array[j];
+                array[j]   = array[j+1];
+                array[j+1] = temp;
+            }
+        }
+    }
+    return array;
 }
 
 bool hasOnlyChars(char* str, char* allowedChars) {
@@ -170,65 +206,53 @@ void removeReminder(char* target) {
         entries_arr[0] = entry;
 
     } else if (hasOnlyChars(target, num_array_chars) == true) {
-        /* char* entries_str = target, *currnum; */
         char* entries_str = target;
         int entry_num = 0;
 
-        /* while ((currnum = strtok(entry_num ? NULL : entries_str, ",")) != NULL) { */
-        /*     arr_count++; */
-        /* } */
-        /* entries_arr = (int*)malloc(sizeof(int)*arr_count); */
-
-        /* while ((currnum = strtok(entry_num ? NULL : entries_str, ",")) != NULL) { */
-        /*     entries_arr[entry_num++] = atoi(currnum); */
-        /* } */
-
-        /* token = strtok(entries_str, ","); */
-        /* // loop through the string to extract all other tokens */
-        /* while (token != NULL) { */
-        /*     arr_count++; */
-        /*     token = strtok(NULL, ","); */
-        /* } */
-
-        /* entries_arr = (int*)malloc(sizeof(int)*arr_count); */
-        /* arr_count = 0; */
         token = strtok(entries_str, ",");
-        // loop through the string to extract all other tokens
+        /* loop through the string to extract all other tokens */
         while (token != NULL) {
             entries_arr[arr_count] = atoi(token);
             arr_count++;
+            if (arr_count > entry_max) {
+                printf("Reached entry removal max!\n");
+                printf("Entered %d, expected max is %d.\n", arr_count, entry_max);
+                printf("Aborting removal.\n");
+                return;
+            }
             token = strtok(NULL, ",");
         }
 
-
-        /* int entry_arr_length = sizeof(entries_arr) / sizeof(entries_arr[0]); */
-        /* for (int i = 0; i < entry_arr_length; i++) { */
-        /*     printf("Entry number %d: %d\n", i, entries_arr[i]); */
+        /* for(int i = 0; i < entry_max; ++i) { */
+        /*   printf("Element %d: %d\n", i, entries_arr[i]); */
         /* } */
-
-        for(int i = 0; i < entry_max; ++i) {
-          printf("Element %d: %d\n", i, entries_arr[i]);
-        }
-
 
     } else {
         printf("Bad removal parameter: %s\n", target);
         return;
     }
 
-    int entry_arr_length = sizeof(entries_arr) / sizeof(entries_arr[0]);
-    int curr_line = 1;
+    /* size_t entry_arr_length = sizeof(entries_arr) / sizeof(entries_arr[0]); */
     char* tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
 
-    for (int i = 0; i < entry_arr_length; i++) {
+    for (int i = 0; i < entry_max; i++) {
+        if (entries_arr[i] == 0) {
+            continue;
+        }
+
+        /* printf("Deleting %d\n", entries_arr[i]); */
+
         if (access(creminders, F_OK) != -1) {
             FILE *file1 = fopen(creminders, "r");
 
+
             if (file1 == NULL) {
+                printf("error: file does not exist\n");
                 return;
             }
 
             FILE* file2 = fopen(tmp_filename, "w");
+            int curr_line = 1;
             while (fgets(buffer, sizeof(buffer), file1)) {
                   if (curr_line != entries_arr[i]) {
                      fputs(buffer, file2);
@@ -249,40 +273,21 @@ void showReminders() {
     FILE* file = fopen(getFileName(0), "r"); /* should check the result */
     int line_num = 1;
     if (file != NULL) {
+        printf("########## Creminders ##########\n");
         char line[512];
         while (fgets(line, sizeof(line), file)) {
-            // note that fgets don't strip the terminating \n, checking its
-            // presence would allow to handle lines longer that sizeof(line)
+            /* note that fgets don't strip the terminating \n, checking its */
+            /* presence would allow to handle lines longer that sizeof(line) */
             if (strcmp(line, "\n")) {
                 printf("[%d] - %s", line_num, line);
                 line_num++;
             }
         }
+        printf("################################\n");
         fclose(file);
     } else {
         printf("creminders file not found!\n");
     }
-}
-
-void version() {
-    char ver[] = "0.0.1";
-    printf("%s\n", ver);
-}
-
-void help() {
-    const char help_msg[] =
-    "For this program to work as intended, add this line to the bottom of your .bashrc file:\n"
-    "  crem --show\n"
-    "Or use the flag --add-to-sh to do it for you\n"
-    "Usage:\n"
-    "  crem                    Creates $HOME/.config/creminders file\n"
-    "  crem -a                 Add an entry inside the reminders file\n"
-    "  crem -r                 Remove an entry [or multiple entries, seperated with \",\"]\n"
-    "  crem -R                 Remove $HOME/.config/creminders file\n"
-    "  crem --show             Prints your reminders to the terminal\n"
-    "  crem --add-to-sh        Adds reminder autodetection inside bash|zsh|fish\n"
-    "  crem --version          Prints what version of crem you have installed\n";
-    printf(help_msg);
 }
 
 int main(int argc, char* argv[]) {
