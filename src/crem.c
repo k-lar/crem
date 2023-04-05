@@ -59,17 +59,15 @@ void version(void) {
 }
 
 void help(void) {
-    const char help_msg[] =
-    "For this program to work as intended, add this line to the bottom of your .bashrc file:\n"
-    "  crem --show\n"
-    "Usage:\n"
-    "  crem                 Creates $HOME/.config/creminders file\n"
-    "  crem -a              Add an entry inside the reminders file\n"
-    "  crem -r              Remove an entry [or multiple entries, seperated with \",\"]\n"
-    "  crem -R              Remove $HOME/.config/creminders file\n"
-    "  crem --show          Prints your reminders to the terminal\n"
-    "  crem --version       Prints what version of crem you have installed\n";
-    printf(help_msg);
+    printf("For this program to work as intended, add this line to the bottom of your .bashrc file:\n");
+    printf("  crem --show\n");
+    printf("Usage:\n");
+    printf("  crem                    Creates $HOME/.config/creminders file\n");
+    printf("  crem -a                 Add an entry inside the reminders file\n");
+    printf("  crem -r                 Remove an entry [or multiple entries, seperated with \",\"]\n");
+    printf("  crem -R                 Remove $HOME/.config/creminders file\n");
+    printf("  crem --show             Prints your reminders to the terminal\n");
+    printf("  crem --version          Prints what version of crem you have installed\n");
 }
 
 char* getFileName(int give_dir) {
