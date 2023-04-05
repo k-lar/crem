@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdbool.h>
@@ -145,7 +144,7 @@ void createSource(void) {
 
 void removeSource(void) {
     char* creminders = getFileName(0);
-    if (access(creminders, F_OK) != -1) {
+    if (fileExists(creminders)) {
         if (remove(creminders) == 0) {
             printf("File deleted successfully.\n");
         } else {
@@ -156,7 +155,7 @@ void removeSource(void) {
 
 void addReminder(char* reminder) {
     char* creminders = getFileName(0);
-    if (access(creminders, F_OK) != -1) {
+    if (fileExists(creminders)) {
         FILE *file = fopen(creminders, "a");
         if (file == NULL) {
             createSource();
@@ -256,7 +255,7 @@ void removeReminder(char* target) {
             continue;
         }
 
-        if (access(creminders, F_OK) != -1) {
+        if (fileExists(creminders)) {
             FILE *file1 = fopen(creminders, "r");
 
 
@@ -308,7 +307,7 @@ int main(int argc, char* argv[]) {
     if (argc == 1) {
 	if (fileExists(getFileName(0)) == 0) {
 	    createSource();
-        if (fileExists(getFileName(0)) != 0) {
+        if (fileExists(getFileName(0))) {
             printf("Success!\n");
             printf("For help using this program, use the -h flag.\n");
         }
