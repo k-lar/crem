@@ -16,8 +16,7 @@
 #endif
 
 /* Boolean type definition because of portability */
-typedef enum
-{
+typedef enum {
     false = ( 1 == 0 ),
     true = ( ! false )
 } bool;
@@ -63,23 +62,24 @@ void help(void) {
     const char help_msg[] =
     "For this program to work as intended, add this line to the bottom of your .bashrc file:\n"
     "  crem --show\n"
-    "Or use the flag --add-to-sh to do it for you\n"
     "Usage:\n"
-    "  crem                    Creates $HOME/.config/creminders file\n"
-    "  crem -a                 Add an entry inside the reminders file\n"
-    "  crem -r                 Remove an entry [or multiple entries, seperated with \",\"]\n"
-    "  crem -R                 Remove $HOME/.config/creminders file\n"
-    "  crem --show             Prints your reminders to the terminal\n"
-    "  crem --version          Prints what version of crem you have installed\n";
+    "  crem                 Creates $HOME/.config/creminders file\n"
+    "  crem -a              Add an entry inside the reminders file\n"
+    "  crem -r              Remove an entry [or multiple entries, seperated with \",\"]\n"
+    "  crem -R              Remove $HOME/.config/creminders file\n"
+    "  crem --show          Prints your reminders to the terminal\n"
+    "  crem --version       Prints what version of crem you have installed\n";
     printf(help_msg);
 }
 
 char* getFileName(int give_dir) {
     char* crempath_dir = (char* )malloc(50);
     char* crempath = (char* )malloc(50);
+    char* path = (char* )malloc(50);
+    char* crem_extension = (char* )malloc(16);
     if (strcmp(platform, "linux") == 0) {
-        char* path = getenv("HOME");
-        char* crem_extension = "/.config/crem/";
+        path = getenv("HOME");
+        crem_extension = "/.config/crem/";
         crempath_dir = concatString(path, crempath_dir, crem_extension);
         crempath = concatString(crempath_dir, crempath, "creminders");
 
@@ -90,8 +90,8 @@ char* getFileName(int give_dir) {
         }
 
     } else if (strcmp(platform, "windows") == 0) {
-        char* path = getenv("APPDATA");;
-        char* crem_extension = "/crem/";
+        path = getenv("APPDATA");;
+        crem_extension = "/crem/";
         crempath_dir = concatString(path, crempath_dir, crem_extension);
         crempath = concatString(crempath_dir, crempath, "creminders");
 
@@ -191,11 +191,14 @@ int* bubbleSort(int* array, int array_length) {
 bool hasOnlyChars(char* str, char* allowedChars) {
     int strLen = strlen(str);
     int charsLen = strlen(allowedChars);
-    for (int i = 0; i < strLen; i++) {
-        bool charExists = false;
+    int i, j;
+    bool charExists;
+
+    for (i = 0; i < strLen; i++) {
+        charExists = false;
 
         /* Check if character exists in allowedChars */
-        for (int j = 0; j < charsLen; j++) {
+        for (j = 0; j < charsLen; j++) {
             if (str[i] == allowedChars[j]) {
                 charExists = true;
                 break;
@@ -216,14 +219,17 @@ void removeReminder(char* target) {
     char* creminders = getFileName(0);
     char buffer[1024];
     char* token;
-    int* entries_arr;
     const int entry_max = 25;
-    entries_arr = (int* )malloc(sizeof(int) * entry_max);
-    memset(entries_arr, 0, sizeof(int)*entry_max);
+    int* entries_arr = (int* )malloc(sizeof(int) * entry_max);
     int arr_count = 0;
-
+    int entry_num;
     char* number_chars = "0123456789";
     char* num_array_chars = "0123456789,";
+    char* tmp_filename = (char* )malloc(50);
+    int* sorted_entries = (int* )malloc(25 * sizeof (int));
+    /* entries_arr = (int* )malloc(sizeof(int) * entry_max); */
+    memset(entries_arr, 0, sizeof(int)*entry_max);
+
     if (hasOnlyChars(target, number_chars) == true) {
         int entry = atoi(target);
         entries_arr[0] = entry;
@@ -250,28 +256,28 @@ void removeReminder(char* target) {
         return;
     }
 
-    char* tmp_filename = (char* )malloc(50);
     tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
-    int* sorted_entries = bubbleSort(entries_arr, entry_max);
+    /* int* sorted_entries = bubbleSort(entries_arr, entry_max); */
+    sorted_entries = bubbleSort(entries_arr, entry_max);
 
-    for (int i = 0; i < entry_max; i++) {
-        if (sorted_entries[i] == 0) {
+    for (entry_num = 0; entry_num < entry_max; entry_num++) {
+        if (sorted_entries[entry_num] == 0) {
             continue;
         }
 
         if (fileExists(creminders)) {
-            FILE *file1 = fopen(creminders, "r");
-
+            FILE* file1 = fopen(creminders, "r");
+            FILE* file2 = fopen(tmp_filename, "w");
+            int curr_line;
 
             if (file1 == NULL) {
                 printf("error: file does not exist\n");
                 return;
             }
 
-            FILE* file2 = fopen(tmp_filename, "w");
-            int curr_line = 1;
+            curr_line = 1;
             while (fgets(buffer, sizeof(buffer), file1)) {
-                  if (curr_line != sorted_entries[i]) {
+                  if (curr_line != sorted_entries[entry_num]) {
                      fputs(buffer, file2);
                   }
                   curr_line++;
@@ -289,9 +295,10 @@ void removeReminder(char* target) {
 void showReminders(void) {
     FILE* file = fopen(getFileName(0), "r"); /* should check the result */
     int line_num = 1;
+    char line[512];
+
     if (file != NULL) {
         printf("########## Creminders ##########\n");
-        char line[512];
         while (fgets(line, sizeof(line), file)) {
             /* note that fgets don't strip the terminating \n, checking its */
             /* presence would allow to handle lines longer that sizeof(line) */
@@ -308,6 +315,7 @@ void showReminders(void) {
 }
 
 int main(int argc, char* argv[]) {
+    int arg_num;
     if (argc == 1) {
 	if (fileExists(getFileName(0)) == 0) {
 	    createSource();
@@ -321,7 +329,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    for (int arg_num = 1; arg_num < argc;) {
+    for (arg_num = 1; arg_num < argc;) {
         if (strcmp(argv[arg_num], "-v") == 0 || strcmp(argv[arg_num], "--version") == 0) {
             version();
             arg_num++;
