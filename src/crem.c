@@ -37,7 +37,7 @@ void removeReminder(char* target);
 void showReminders(void);
 
 char* concatString(char* str1, char* str2, char* str3) {
-    if((str2 = malloc(strlen(str1)+strlen(str3)+1)) != NULL){
+    if ((str2 = malloc(strlen(str1)+strlen(str3)+1)) != NULL){
         str2[0] = '\0';   /* ensures the memory is an empty string */
         strcat(str2,str1);
         strcat(str2,str3);
@@ -100,7 +100,7 @@ char* getFileName(int give_dir) {
         }
 
     } else {
-        printf("Program was not built for this system.");
+        printf("Program was not built for this system.\n");
         exit(1);
     }
     return NULL;
@@ -132,7 +132,7 @@ void createSource(void) {
             }
         }
     } else {
-	    FILE* path = fopen(name, "w");
+        FILE* path = fopen(name, "w");
 
         if (path == NULL) {
             printf("fopen failed\n");
