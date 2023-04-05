@@ -19,7 +19,7 @@ manpage:
 	fi
 
 crem:
-	@$(CC) $(CFLAGS) -o $@ src/crem.c
+	$(CC) $(CFLAGS) -o $@ src/crem.c
 
 install: crem
 	@install -Dm755 crem $(DESTDIR)$(BINDIR)/crem
