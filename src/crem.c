@@ -3,8 +3,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdbool.h>
-#include <errno.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
     const char platform[] = "windows";
@@ -16,6 +14,13 @@
     const char platform[] = "other";
 
 #endif
+
+/* Boolean type definition because of portability */
+typedef enum
+{
+    false = ( 1 == 0 ),
+    true = ( ! false )
+} bool;
 
 /* Function prototypes: */
 char* concatString(char* str1, char* str2, char* str3);
@@ -31,7 +36,6 @@ int* bubbleSort(int* array, int array_length);
 bool hasOnlyChars(char* str, char* allowedChars);
 void removeReminder(char* target);
 void showReminders(void);
-
 
 char* concatString(char* str1, char* str2, char* str3) {
     if((str2 = malloc(strlen(str1)+strlen(str3)+1)) != NULL){
@@ -123,7 +127,7 @@ void createSource(void) {
         } else {
             FILE* path = fopen(name, "w");
             if (path == NULL) {
-                printf("fopen failed, errno: %d\n", errno);
+                printf("fopen failed\n");
                 exit(1);
             } else {
                 fclose(path);
@@ -133,7 +137,7 @@ void createSource(void) {
 	    FILE* path = fopen(name, "w");
 
         if (path == NULL) {
-            printf("fopen failed, errno: %d\n", errno);
+            printf("fopen failed\n");
             exit(1);
         } else {
             fclose(path);
