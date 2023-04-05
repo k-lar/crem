@@ -1,5 +1,5 @@
 CFLAGS += -std=c99 -Wall -Wextra -pedantic -Wold-style-declaration
-CFLAGS += -Wno-unused-parameter
+CFLAGS += -Wmissing-prototypes -Wno-unused-parameter
 PREFIX ?= /usr
 BINDIR ?= $(PREFIX)/bin
 MANDIR  = $(PREFIX)/share/man

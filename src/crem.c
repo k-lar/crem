@@ -8,18 +8,31 @@
 #include <errno.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-    /* #define PLATFORM "windows" */
     const char platform[] = "windows";
 
 #elif defined(__linux__) /* any linux distribution */
-    /* #define PLATFORM "linux" */
     const char platform[] = "linux";
 
 #else
-    /* #define PLATFORM "other" */
     const char platform[] = "other";
 
 #endif
+
+/* Function prototypes: */
+char* concatString(char* str1, char* str2, char* str3);
+int fileExists(char* fileName);
+void version(void);
+void help(void);
+char* getFileName(int give_dir);
+int isDir(const char* fileName);
+void createSource(void);
+void removeSource(void);
+void addReminder(char* reminder);
+int* bubbleSort(int* array, int array_length);
+bool hasOnlyChars(char* str, char* allowedChars);
+void removeReminder(char* target);
+void showReminders(void);
+
 
 char* concatString(char* str1, char* str2, char* str3) {
     if((str2 = malloc(strlen(str1)+strlen(str3)+1)) != NULL){
@@ -38,12 +51,12 @@ int fileExists(char* fileName) {
     return (stat(fileName, &buffer) == 0);
 }
 
-void version() {
+void version(void) {
     char ver[] = "0.1.0";
     printf("%s\n", ver);
 }
 
-void help() {
+void help(void) {
     const char help_msg[] =
     "For this program to work as intended, add this line to the bottom of your .bashrc file:\n"
     "  crem --show\n"
@@ -98,7 +111,7 @@ int isDir(const char* fileName) {
     return S_ISREG(path.st_mode);
 }
 
-void createSource() {
+void createSource(void) {
     char* name = getFileName(0);
     char* creminders_choice = (char* )malloc(16);
     if (isDir(getFileName(1)) == false) {
@@ -130,7 +143,7 @@ void createSource() {
     free(creminders_choice);
 }
 
-void removeSource() {
+void removeSource(void) {
     char* creminders = getFileName(0);
     if (access(creminders, F_OK) != -1) {
         if (remove(creminders) == 0) {
@@ -202,7 +215,7 @@ void removeReminder(char* target) {
     char* token;
     int* entries_arr;
     const int entry_max = 25;
-    entries_arr = malloc(sizeof(int) * entry_max);
+    entries_arr = (int* )malloc(sizeof(int) * entry_max);
     memset(entries_arr, 0, sizeof(int)*entry_max);
     int arr_count = 0;
 
@@ -234,7 +247,7 @@ void removeReminder(char* target) {
         return;
     }
 
-    char* tmp_filename = malloc(50);
+    char* tmp_filename = (char* )malloc(50);
     tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
     int* sorted_entries = bubbleSort(entries_arr, entry_max);
 
@@ -270,7 +283,7 @@ void removeReminder(char* target) {
     }
 }
 
-void showReminders() {
+void showReminders(void) {
     FILE* file = fopen(getFileName(0), "r"); /* should check the result */
     int line_num = 1;
     if (file != NULL) {
