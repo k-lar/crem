@@ -224,8 +224,6 @@ void removeReminder(char* target) {
     char* number_chars = "0123456789";
     char* num_array_chars = "0123456789,";
     char* tmp_filename = (char* )malloc(50);
-    int* sorted_entries = (int* )malloc(25 * sizeof (int));
-    /* entries_arr = (int* )malloc(sizeof(int) * entry_max); */
     memset(entries_arr, 0, sizeof(int)*entry_max);
 
     if (hasOnlyChars(target, number_chars) == true) {
@@ -242,8 +240,10 @@ void removeReminder(char* target) {
             arr_count++;
             if (arr_count > entry_max) {
                 printf("Reached entry removal max!\n");
-                printf("Entered %d, expected max is %d.\n", arr_count, entry_max);
+                printf("Entered too many targets, expected max is %d.\n", arr_count, entry_max);
                 printf("Aborting removal.\n");
+                free(tmp_filename);
+                free(entries_arr);
                 return;
             }
             token = strtok(NULL, ",");
@@ -251,15 +251,16 @@ void removeReminder(char* target) {
 
     } else {
         printf("Bad removal parameter: %s\n", target);
+        free(tmp_filename);
+        free(entries_arr);
         return;
     }
 
     tmp_filename = concatString(getFileName(1), tmp_filename, "tmp");
-    /* int* sorted_entries = bubbleSort(entries_arr, entry_max); */
-    sorted_entries = bubbleSort(entries_arr, entry_max);
+    bubbleSort(entries_arr, entry_max);
 
     for (entry_num = 0; entry_num < entry_max; entry_num++) {
-        if (sorted_entries[entry_num] == 0) {
+        if (entries_arr[entry_num] == 0) {
             continue;
         }
 
@@ -269,13 +270,15 @@ void removeReminder(char* target) {
             int curr_line;
 
             if (file1 == NULL) {
-                printf("error: file does not exist\n");
+                printf("Error: file does not exist\n");
+                free(tmp_filename);
+                free(entries_arr);
                 return;
             }
 
             curr_line = 1;
             while (fgets(buffer, sizeof(buffer), file1)) {
-                  if (curr_line != sorted_entries[entry_num]) {
+                  if (curr_line != entries_arr[entry_num]) {
                      fputs(buffer, file2);
                   }
                   curr_line++;
@@ -288,6 +291,8 @@ void removeReminder(char* target) {
             rename(tmp_filename, creminders);
         }
     }
+    free(tmp_filename);
+    free(entries_arr);
 }
 
 void showReminders(void) {
