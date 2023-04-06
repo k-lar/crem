@@ -240,7 +240,7 @@ void removeReminder(char* target) {
             arr_count++;
             if (arr_count > entry_max) {
                 printf("Reached entry removal max!\n");
-                printf("Entered too many targets, expected max is %d.\n", arr_count, entry_max);
+                printf("Entered too many targets, expected max is %d.\n", entry_max);
                 printf("Aborting removal.\n");
                 free(tmp_filename);
                 free(entries_arr);
