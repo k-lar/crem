@@ -55,7 +55,7 @@ Example:
 
 ```console
 user@pc:~$ crem --show
-################ Reminders ###############
+################ Creminders ###############
 [1] - Check weird noise in PC
 [2] - Visit John sometime next week
 [3] - Cool editor: helix-editor.com
