@@ -65,7 +65,8 @@ user@pc:~$ crem --show
 ##########################################
 ```
 
-Notes / reminders are stored in a separate file in `~/.config/crem/creminders`.  
+Notes / reminders are stored in a separate file in `~/.config/crem/creminders` on Linux and Unix
+systems and on Windows they should be in `C:/crem/creminders`
 
 ## Dependencies
 
